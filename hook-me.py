@@ -5,7 +5,7 @@ Python script to install git hooks from git-hooks repository
 install
 -------
 
-curl -S https://raw.githubusercontent.com/fgriberi/git-hooks/master/hook-me.py | python3
+curl -S https://raw.githubusercontent.com/fgriberi/git-hooks/master/hook-me.py | python
 """
 
 import os
