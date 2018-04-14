@@ -64,8 +64,10 @@ def backup_hook(hook_file):
     :param hook_file: a git hook file path
     :ptype hook_file: str
     """
-    print("\033[33mBacking up {hook_file}\033[39m".format(hook_file=hook_file))
-    shutil.copy2(hook_file, hook_file + BACKUP_EXT)
+    backup_file = hook_file + BACKUP_EXT
+    msg = "\033[33mBacking up {hook_file} in {backup_file}\033[39m"
+    print(msg.format(hook_file=hook_file, backup_file=backup_file))
+    shutil.copy2(hook_file, backup_file)
 
 
 def remote_hook_file_exist(remote_file_path):
