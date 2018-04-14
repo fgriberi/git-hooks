@@ -1,25 +1,25 @@
 #!/usr/bin/env python
 
 """
-This script, used as a git's prepare-commit-msg hook, parse the current branch name
-to extract issues IDs, (like XYZ-123) and mention that in the commit message.
+This script, used as a git's prepare-commit-msg hook, parse the current
+branch name to extract issues IDs, (like XYZ-123) and mention that in
+the commit message.
 
 It's particularly useful to integrate Stash and Jira
 
 Install
 -------
 
-Just save it as .git/hooks/prepare-commit-msg  in your repo and make the file executable.
-
+Just save it as .git/hooks/prepare-commit-msg  in your repo and make the
+file executable.
 """
-
-
 
 import re
 import sys
 import subprocess
 
 excluded_branches = ['master', 'develop']
+
 
 def expand(issue):
     """
@@ -35,6 +35,8 @@ def expand(issue):
     key = issue.split('-')[0]
     return ' '.join([("{}-{}".format(key, i) if not i.startswith(key) else i)
                      for i in issue.split('+')])
+
+
 def main():
     try:
         current_branch = subprocess.check_output(['git', 'symbolic-ref', '--short', 'HEAD']).strip()
@@ -61,6 +63,7 @@ def main():
     msg = "{}: {}".format(issues_mentioned, original)
     with open(sys.argv[1], 'w') as msg_file:
         msg_file.write(msg)
+
 
 if __name__ == '__main__':
     main()
