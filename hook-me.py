@@ -15,9 +15,7 @@ import stat
 import shutil
 import subprocess
 
-# BASE_URL = 'https://raw.githubusercontent.com/fgriberi/git-hooks/master'
-BASE_URL = 'https://raw.githubusercontent.com/fgriberi/git-hooks/ISSUE-1-add-flake8'
-
+BASE_URL = 'https://raw.githubusercontent.com/fgriberi/git-hooks/master'
 GIT_HOOKS_PATH = '.git/hooks'
 BACKUP_EXT = '.bkp'
 SUCCESS_CODE = 0
@@ -159,6 +157,7 @@ def flake8_setup():
     remote_flake_conf = os.path.join(BASE_URL, '.flake8')
     local_flake_conf = os.path.join('~', '.flake8')
     run_cmd(CURL_DWN_CMD.format(remote_url=remote_flake_conf, local_path=local_flake_conf))
+
 
 if is_git_directory():
     if activated_virtual_env():
