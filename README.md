@@ -14,7 +14,16 @@ Flake8 is run per each file that was updated in the current commit. To change th
 ## Use examples
 
 ### pre-commit
-TODO
+This hook runs two verifications.
+1. Checks that you commit has not ipdb or pdb statements. If were the case, you'll see on the bash the specific line and position where the statement was not deleted and the commit will be declined. 
+
+![alt text](https://preview.ibb.co/iJgmP7/pdb.png)
+
+2. Checks that you commit pass the `flake8` rules. If the execution fails, then the errors will be shown in the bash and the commit will be declined. 
+
+![alt text](https://image.ibb.co/dcP6P7/flak8.png)
 
 ### prepare-commit-msg
-TODO
+As you can see in the picture, the prefix branch pattern name `XXX-1` is added as a prefix commit message.
+![alt text](https://image.ibb.co/ndxLZ7/bash.png)
+
