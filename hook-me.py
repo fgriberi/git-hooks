@@ -10,6 +10,7 @@ curl -S https://raw.githubusercontent.com/fgriberi/git-hooks/master/hook-me.py |
 
 import os
 import sys
+import pip
 import stat
 import shutil
 import subprocess
@@ -19,6 +20,9 @@ GIT_HOOKS_PATH = '.git/hooks'
 BACKUP_EXT = '.bkp'
 SUCCESS_CODE = 0
 ERROR_CODE = -1
+REQUIREMENTS = 'requirements.txt'
+LOCAL_REQ_FILE = os.path.join('/tmp', REQUIREMENTS)
+CURL_DWN_CMD = 'curl -s {remote_url} > {local_path}'
 
 
 def run_cmd(cmd):
@@ -87,9 +91,7 @@ def download_hook(source, destination):
     :param destination: local destination path
     :ptyoe destination: str
     """
-    curl_cmd = "curl -s {remote_url} > {local_path}".format(
-        remote_url=source, local_path=destination)
-    run_cmd(curl_cmd)
+    run_cmd(CURL_DWN_CMD.format(remote_url=source, local_path=destination))
 
     # set executable permissions
     st = os.stat(destination)
@@ -115,6 +117,51 @@ def install_hook(hook_name):
         print("\033[31mRemote file not found {file_url}.\033[39m".format(file_url=remote_hook_file))
 
 
+def activated_virtual_env():
+    """Determines if Python is running inside virtualenv
+    :return True if Python is running inside virtualenv, otherwise False
+    """
+    return hasattr(sys, 'real_prefix')
+
+
+def read_requirements():
+    """Reads requirements from remote requirements file
+    :return a requirements generator
+    """
+    remote_req_url = os.path.join(BASE_URL, REQUIREMENTS)
+    run_cmd(CURL_DWN_CMD.format(remote_url=remote_req_url, local_path=LOCAL_REQ_FILE))
+    requirements = pip.req.parse_requirements(LOCAL_REQ_FILE,
+                                              session=pip.download.PipSession())
+    return (req.req for req in requirements)
+
+
+def install_requirements():
+    """Install python requirements in virtual env
+    """
+    pip_cmd = 'pip install {req} -U'
+    for requirement in read_requirements():
+        # TODO: check if requirement is already installed
+        ret_code = run_cmd(pip_cmd.format(req=requirement))
+        if ret_code != SUCCESS_CODE:
+            error_msg = "\033[31mPlease install {req} manually and re-run hook-me script.\033[39m"
+            print(error_msg.format(req=requirement))
+            sys.exit(ERROR_CODE)
+        print("\033[32m{req} installed into activated virtualenv.\033[39m".format(req=requirement))
+    os.remove(LOCAL_REQ_FILE)
+
+
+def flake8_setup():
+    """Flake8 setup.
+    Copy the remote .flake8 file into home
+    """
+    remote_flake_conf = os.path.join(BASE_URL, '.flake8')
+    local_flake_conf = os.path.join('~', '.flake8')
+    run_cmd(CURL_DWN_CMD.format(remote_url=remote_flake_conf, local_path=local_flake_conf))
+
+
 if is_git_directory():
+    if activated_virtual_env():
+        install_requirements()
+        flake8_setup()
     install_hook('pre-commit')
     install_hook('prepare-commit-msg')

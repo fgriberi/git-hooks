@@ -1,19 +1,69 @@
 #!/usr/bin/env python
 """
 no more embarrasing "removed pdb, sorry" commits
+no more embarrasing "fixed flake8, sorry" commits
 
 install
 -------
 
-save it as .git/hooks/pre-commit giving +x permission
+use the hook-me.py script
 """
 
 import sys
 from subprocess import Popen, PIPE
 
-proc = Popen(['git', 'grep', '-E', '-n', '[ ;]i?pdb'], stdout=PIPE)
-pdb_check, _ = proc.communicate()
-if proc.returncode == 0:
-    print("\033[31mPdb breakpoint found, shame on you! Please remove before commiting.\033[39m")
-    print(pdb_check)
-    sys.exit(-1)
+ERROR_CODE = -1
+
+
+class CodeChecker(object):
+    pass
+
+
+class PdbsChecker(CodeChecker):
+
+    @classmethod
+    def check(cls):
+        """Checks that there are no ipdb, pdb statements in the code
+        """
+        proc = Popen(['git', 'grep', '-E', '-n', '[ ;]i?pdb'], stdout=PIPE)
+        pdb_check, _ = proc.communicate()
+        if proc.returncode == 0:
+            print("\033[31mPdb breakpoint found, shame on you! Please remove before commiting.\033[39m")
+            print(pdb_check)
+            sys.exit(ERROR_CODE)
+
+class Flake8Checker(CodeChecker):
+
+    @classmethod
+    def get_updated_files(cls):
+        """Returns the updated files in the current commit
+        :return str
+        """
+        diff_files_cmd = "git diff --cached --name-status | " \
+                         "grep -v ^D | " \
+                         "awk '$1 $2 { print $2}' | " \
+                         "grep -e .py"
+        proc = Popen(diff_files_cmd, stdout=PIPE, shell=True)
+        updated_files, _ = proc.communicate()
+        return updated_files.replace('\n', ' ')
+
+    @classmethod
+    def check(cls):
+        """Checks flake8 compliant
+        Flake8 is run over each updated file in the current commit
+        """
+        updated_files = Flake8Checker.get_updated_files()
+
+        flake8_cmd = 'flake8 --count {updated_files}'.format(updated_files=updated_files)
+        proc = Popen(flake8_cmd, stdout=PIPE, shell=True)
+        flake8_check, _ = proc.communicate()
+
+        if proc.returncode != 0:
+            print(flake8_check)
+            print("\033[31mFlake8 violations have been detected.\033[39m")
+            print("\033[31mPlease fix before commiting or force the commit "
+                  "with 'git commit --no-verify")
+            sys.exit(ERROR_CODE)
+
+PdbsChecker.check()
+Flake8Checker.check()
