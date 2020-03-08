@@ -1,4 +1,4 @@
-import os
+ import os
 import sys
 
 class MyClass(object):
@@ -9,6 +9,8 @@ class MyClass(object):
     def get_val(self):
         print(self.value)
         print('******************** This is a long print line ********************')
+        print('************************** This is a another long print line **********************************************')
+        print('************************** This is a another long print line **********************************************')
         print('************************** This is a another long print line **********************************************')
         return self.value
 
