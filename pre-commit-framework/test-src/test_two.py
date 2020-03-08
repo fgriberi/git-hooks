@@ -10,7 +10,7 @@ class MyClass(object):
         print(self.value)
         print('******************** This is a long print line ********************')
         print('************************** This is a another long print line **********************************************')
-        print('************************** This is a another long print line **********************************************')
+        print('******************************* This is a another long print line **********************************************')
         return self.value
 
 a = MyClass()
